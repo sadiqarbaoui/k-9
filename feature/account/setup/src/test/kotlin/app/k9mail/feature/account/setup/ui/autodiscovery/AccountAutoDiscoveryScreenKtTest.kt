@@ -18,12 +18,14 @@ class AccountAutoDiscoveryScreenKtTest : ComposeTest() {
         val viewModel = FakeAccountAutoDiscoveryViewModel(initialState)
         var onNextCounter = 0
         var onBackCounter = 0
+        var onOAuthCounter = 0
 
         setContent {
             ThunderbirdTheme {
                 AccountAutoDiscoveryScreen(
                     onNext = { _, _ -> onNextCounter++ },
                     onBack = { onBackCounter++ },
+                    onOAuth = { _, _ -> onOAuthCounter++ },
                     viewModel = viewModel,
                 )
             }
@@ -31,15 +33,24 @@ class AccountAutoDiscoveryScreenKtTest : ComposeTest() {
 
         assertThat(onNextCounter).isEqualTo(0)
         assertThat(onBackCounter).isEqualTo(0)
+        assertThat(onOAuthCounter).isEqualTo(0)
 
         viewModel.effect(Effect.NavigateNext(isAutomaticConfig = false))
 
         assertThat(onNextCounter).isEqualTo(1)
         assertThat(onBackCounter).isEqualTo(0)
+        assertThat(onOAuthCounter).isEqualTo(0)
 
         viewModel.effect(Effect.NavigateBack)
 
         assertThat(onNextCounter).isEqualTo(1)
         assertThat(onBackCounter).isEqualTo(1)
+        assertThat(onOAuthCounter).isEqualTo(0)
+
+        viewModel.effect(Effect.NavigateOAuth("hostname", "emailAddress"))
+
+        assertThat(onNextCounter).isEqualTo(1)
+        assertThat(onBackCounter).isEqualTo(1)
+        assertThat(onOAuthCounter).isEqualTo(1)
     }
 }

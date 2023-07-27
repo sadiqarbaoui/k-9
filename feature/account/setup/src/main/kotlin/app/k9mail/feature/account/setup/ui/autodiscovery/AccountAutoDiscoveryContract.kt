@@ -24,6 +24,8 @@ interface AccountAutoDiscoveryContract {
         val password: StringInputField = StringInputField(),
         val autoDiscoverySettings: AutoDiscoveryResult.Settings? = null,
         val configurationApproved: BooleanInputField = BooleanInputField(),
+
+        val isSuccess: Boolean = false,
         val error: Error? = null,
         val isLoading: Boolean = false,
     )
@@ -33,6 +35,7 @@ interface AccountAutoDiscoveryContract {
         data class PasswordChanged(val password: String) : Event()
         data class ConfigurationApprovalChanged(val confirmed: Boolean) : Event()
 
+        object OnOAuthFailed : Event()
         object OnNextClicked : Event()
         object OnBackClicked : Event()
         object OnRetryClicked : Event()
@@ -42,6 +45,10 @@ interface AccountAutoDiscoveryContract {
     sealed class Effect {
         data class NavigateNext(
             val isAutomaticConfig: Boolean,
+        ) : Effect()
+        data class NavigateOAuth(
+            val hostname: String,
+            val emailAddress: String,
         ) : Effect()
         object NavigateBack : Effect()
     }

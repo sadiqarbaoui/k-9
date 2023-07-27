@@ -3,9 +3,8 @@ package app.k9mail.feature.account.setup
 import app.k9mail.autodiscovery.api.AutoDiscoveryService
 import app.k9mail.autodiscovery.service.RealAutoDiscoveryService
 import app.k9mail.core.common.coreCommonModule
+import app.k9mail.feature.account.oauth.featureAccountOAuthModule
 import app.k9mail.feature.account.setup.domain.DomainContract
-import app.k9mail.feature.account.setup.domain.usecase.CheckIncomingServerConfig
-import app.k9mail.feature.account.setup.domain.usecase.CheckOutgoingServerConfig
 import app.k9mail.feature.account.setup.domain.usecase.CreateAccount
 import app.k9mail.feature.account.setup.domain.usecase.GetAutoDiscovery
 import app.k9mail.feature.account.setup.domain.usecase.ValidateServerSettings
@@ -34,7 +33,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val featureAccountSetupModule: Module = module {
-    includes(coreCommonModule)
+    includes(coreCommonModule, featureAccountOAuthModule)
 
     single<OkHttpClient> {
         OkHttpClient()
@@ -70,26 +69,6 @@ val featureAccountSetupModule: Module = module {
         )
     }
 
-    factory<DomainContract.UseCase.CheckIncomingServerConfig> {
-        CheckIncomingServerConfig(
-            imapValidator = ImapServerSettingsValidator(
-                trustedSocketFactory = get(),
-                oAuth2TokenProvider = null,
-                clientIdAppName = "null",
-            ),
-            pop3Validator = Pop3ServerSettingsValidator(
-                trustedSocketFactory = get(),
-            ),
-        )
-    }
-    factory<DomainContract.UseCase.CheckOutgoingServerConfig> {
-        CheckOutgoingServerConfig(
-            smtpValidator = SmtpServerSettingsValidator(
-                trustedSocketFactory = get(),
-                oAuth2TokenProvider = null,
-            ),
-        )
-    }
     factory<DomainContract.UseCase.CreateAccount> {
         CreateAccount(
             accountCreator = get(),

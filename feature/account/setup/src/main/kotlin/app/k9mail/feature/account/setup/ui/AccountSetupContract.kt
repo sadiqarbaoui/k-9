@@ -1,6 +1,8 @@
 package app.k9mail.feature.account.setup.ui
 
 import app.k9mail.core.ui.compose.common.mvi.UnidirectionalViewModel
+import app.k9mail.feature.account.oauth.domain.entity.OAuthResult
+import app.k9mail.feature.account.oauth.ui.AccountOAuthContract
 import app.k9mail.feature.account.setup.ui.autodiscovery.AccountAutoDiscoveryContract
 import app.k9mail.feature.account.setup.ui.incoming.AccountIncomingConfigContract
 import app.k9mail.feature.account.setup.ui.options.AccountOptionsContract
@@ -22,10 +24,18 @@ interface AccountSetupContract {
     data class State(
         val setupStep: SetupStep = SetupStep.AUTO_CONFIG,
         val isAutomaticConfig: Boolean = false,
+        val showOAuth: Boolean = false,
     )
 
     sealed interface Event {
-        object OnNext : Event
+        data class OnOAuth(
+            val hostname: String,
+            val emailAddress: String,
+        ) : Event
+
+        data class OnOAuthResult(
+            val result: OAuthResult,
+        ) : Event
 
         data class OnAutoDiscoveryFinished(
             val state: AccountAutoDiscoveryContract.State,
@@ -39,10 +49,15 @@ interface AccountSetupContract {
             val optionsState: AccountOptionsContract.State,
         ) : Event
 
+        object OnNext : Event
         object OnBack : Event
     }
 
     sealed interface Effect {
+
+        data class UpdateOAuth(
+            val state: AccountOAuthContract.State,
+        ) : Effect
 
         data class UpdateIncomingConfig(
             val state: AccountIncomingConfigContract.State,
@@ -61,6 +76,10 @@ interface AccountSetupContract {
         ) : Effect
 
         object CollectExternalStates : Effect
+
+        data class AutDiscoveryOAuthFinished(
+            val result: OAuthResult,
+        ) : Effect
 
         data class NavigateNext(
             val accountUuid: String,

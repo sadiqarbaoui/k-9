@@ -1,6 +1,8 @@
 package app.k9mail.feature.account.setup
 
+import android.content.Context
 import app.k9mail.core.common.oauth.OAuthConfigurationFactory
+import app.k9mail.feature.account.oauth.ui.AccountOAuthContract
 import app.k9mail.feature.account.setup.AccountSetupExternalContract.AccountCreator
 import app.k9mail.feature.account.setup.AccountSetupExternalContract.AccountCreator.AccountCreatorResult
 import app.k9mail.feature.account.setup.ui.AccountSetupContract
@@ -45,10 +47,12 @@ class AccountSetupModuleKtTest : KoinTest {
             extraTypes = listOf(
                 AccountSetupContract.State::class,
                 AccountAutoDiscoveryContract.State::class,
+                AccountOAuthContract.State::class,
                 AccountValidationContract.State::class,
                 AccountIncomingConfigContract.State::class,
                 AccountOutgoingConfigContract.State::class,
                 AccountOptionsContract.State::class,
+                Context::class,
             ),
         )
 

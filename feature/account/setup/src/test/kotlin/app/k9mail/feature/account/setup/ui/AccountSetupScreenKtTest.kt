@@ -23,6 +23,7 @@ class AccountSetupScreenKtTest : ComposeTest() {
     fun `should display correct screen for every setup step`() = runTest {
         val viewModel = FakeAccountSetupViewModel()
         val autoDiscoveryViewModel = FakeAccountAutoDiscoveryViewModel()
+        val oAuthViewModel = FakeAccountOAuthViewModel()
         val incomingViewModel = FakeAccountIncomingConfigViewModel()
         val incomingValidationViewModel = FakeAccountValidationViewModel()
         val outgoingViewModel = FakeAccountOutgoingConfigViewModel()
@@ -36,6 +37,7 @@ class AccountSetupScreenKtTest : ComposeTest() {
                     onBack = { },
                     viewModel = viewModel,
                     autoDiscoveryViewModel = autoDiscoveryViewModel,
+                    oAuthViewModel = oAuthViewModel,
                     incomingViewModel = incomingViewModel,
                     incomingValidationViewModel = incomingValidationViewModel,
                     outgoingViewModel = outgoingViewModel,
@@ -56,6 +58,7 @@ class AccountSetupScreenKtTest : ComposeTest() {
         val initialState = State()
         val viewModel = FakeAccountSetupViewModel(initialState)
         val autoDiscoveryViewModel = FakeAccountAutoDiscoveryViewModel()
+        val oAuthViewModel = FakeAccountOAuthViewModel()
         val incomingViewModel = FakeAccountIncomingConfigViewModel()
         val incomingValidationViewModel = FakeAccountValidationViewModel()
         val outgoingViewModel = FakeAccountOutgoingConfigViewModel()
@@ -71,6 +74,7 @@ class AccountSetupScreenKtTest : ComposeTest() {
                     onBack = { onBackCounter++ },
                     viewModel = viewModel,
                     autoDiscoveryViewModel = autoDiscoveryViewModel,
+                    oAuthViewModel = oAuthViewModel,
                     incomingViewModel = incomingViewModel,
                     incomingValidationViewModel = incomingValidationViewModel,
                     outgoingViewModel = outgoingViewModel,

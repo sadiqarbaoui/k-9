@@ -2,6 +2,8 @@ package app.k9mail.feature.account.setup.ui
 
 import androidx.lifecycle.viewModelScope
 import app.k9mail.core.ui.compose.common.mvi.BaseViewModel
+import app.k9mail.feature.account.oauth.domain.entity.OAuthResult
+import app.k9mail.feature.account.oauth.ui.AccountOAuthContract
 import app.k9mail.feature.account.setup.domain.DomainContract.UseCase
 import app.k9mail.feature.account.setup.ui.AccountSetupContract.Effect
 import app.k9mail.feature.account.setup.ui.AccountSetupContract.Event
@@ -20,6 +22,7 @@ import app.k9mail.feature.account.setup.ui.outgoing.AccountOutgoingConfigContrac
 import app.k9mail.feature.account.setup.ui.outgoing.toServerSettings
 import kotlinx.coroutines.launch
 
+@Suppress("TooManyFunctions")
 class AccountSetupViewModel(
     private val createAccount: UseCase.CreateAccount,
     initialState: State = State(),
@@ -43,6 +46,13 @@ class AccountSetupViewModel(
                 optionsState = event.optionsState,
             )
 
+            is Event.OnOAuth -> onOAuth(
+                hostname = event.hostname,
+                emailAddress = event.emailAddress,
+            )
+
+            is Event.OnOAuthResult -> onOAuthResult(event.result)
+
             Event.OnBack -> onBack()
             Event.OnNext -> onNext()
         }
@@ -55,6 +65,36 @@ class AccountSetupViewModel(
         emitEffect(Effect.UpdateOutgoingConfig(autoDiscoveryState.toOutgoingConfigState()))
         emitEffect(Effect.UpdateOptions(autoDiscoveryState.toOptionsState()))
         onNext()
+    }
+
+    private fun onOAuth(hostname: String, emailAddress: String) {
+        emitEffect(
+            Effect.UpdateOAuth(
+                AccountOAuthContract.State(
+                    hostname = hostname,
+                    emailAddress = emailAddress,
+                ),
+            ),
+        )
+        updateState { it.copy(showOAuth = true) }
+    }
+
+    private fun onOAuthResult(result: OAuthResult) {
+        when (result) {
+            is OAuthResult.Success -> onOAuthSuccess(result)
+            is OAuthResult.Failure -> onOAuthFailure()
+        }
+        // TODO
+    }
+
+    private fun onOAuthSuccess(result: OAuthResult.Success) {
+        // TODO progress
+        updateState { it.copy(showOAuth = false) }
+    }
+
+    private fun onOAuthFailure() {
+        // TODO inform caller
+        updateState { it.copy(showOAuth = false) }
     }
 
     private fun onBack() {

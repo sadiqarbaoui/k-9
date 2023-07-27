@@ -2,9 +2,11 @@ package app.k9mail.feature.account.setup.ui.autodiscovery
 
 import androidx.lifecycle.viewModelScope
 import app.k9mail.autodiscovery.api.AutoDiscoveryResult
+import app.k9mail.autodiscovery.api.ImapServerSettings
 import app.k9mail.core.common.domain.usecase.validation.ValidationResult
 import app.k9mail.core.ui.compose.common.mvi.BaseViewModel
 import app.k9mail.feature.account.setup.domain.DomainContract.UseCase
+import app.k9mail.feature.account.setup.domain.entity.AutoDiscoveryAuthenticationType
 import app.k9mail.feature.account.setup.domain.input.StringInputField
 import app.k9mail.feature.account.setup.ui.autodiscovery.AccountAutoDiscoveryContract.ConfigStep
 import app.k9mail.feature.account.setup.ui.autodiscovery.AccountAutoDiscoveryContract.Effect
@@ -40,6 +42,7 @@ internal class AccountAutoDiscoveryViewModel(
             Event.OnEditConfigurationClicked -> {
                 navigateNext(isAutomaticConfig = false)
             }
+            Event.OnOAuthFailed -> TODO()
         }
     }
 
@@ -82,7 +85,7 @@ internal class AccountAutoDiscoveryViewModel(
                 }
 
             ConfigStep.PASSWORD -> submitPassword()
-            ConfigStep.OAUTH -> TODO()
+            ConfigStep.OAUTH -> navigateOAuth()
         }
     }
 
@@ -129,12 +132,18 @@ internal class AccountAutoDiscoveryViewModel(
     }
 
     private fun updateAutoDiscoverySettings(settings: AutoDiscoveryResult.Settings?) {
+        val isOauth = (settings?.incomingServerSettings as? ImapServerSettings)
+            ?.authenticationTypes?.contains(AutoDiscoveryAuthenticationType.OAuth2) ?: false
         updateState {
             it.copy(
                 isLoading = false,
                 autoDiscoverySettings = settings,
-                configStep = ConfigStep.PASSWORD, // TODO use oauth if applicable
+                configStep = if (isOauth) ConfigStep.OAUTH else ConfigStep.PASSWORD,
             )
+        }
+
+        if (isOauth) {
+            navigateOAuth()
         }
     }
 
@@ -189,14 +198,22 @@ internal class AccountAutoDiscoveryViewModel(
                 }
             }
 
-            ConfigStep.PASSWORD -> updateState {
+            ConfigStep.OAUTH,
+            ConfigStep.PASSWORD,
+            -> updateState {
                 it.copy(
                     configStep = ConfigStep.EMAIL_ADDRESS,
                     password = StringInputField(),
                 )
             }
+        }
+    }
 
-            ConfigStep.OAUTH -> TODO()
+    private fun onOAuthFailed() {
+        updateState {
+            it.copy(
+                configStep = ConfigStep.PASSWORD,
+            )
         }
     }
 
@@ -204,5 +221,30 @@ internal class AccountAutoDiscoveryViewModel(
 
     private fun navigateNext(isAutomaticConfig: Boolean) {
         emitEffect(Effect.NavigateNext(isAutomaticConfig))
+    }
+
+    private fun navigateOAuth() = emitEffect(
+        Effect.NavigateOAuth(
+            hostname = getIncomingHostname()!!,
+            emailAddress = state.value.emailAddress.value,
+        ),
+    )
+
+    private fun getIncomingHostname(): String? {
+        val autoDiscovery = state.value.autoDiscoverySettings
+        return if (autoDiscovery != null) {
+            when (autoDiscovery.incomingServerSettings) {
+                is ImapServerSettings -> {
+                    val imapServerSettings = autoDiscovery.incomingServerSettings as ImapServerSettings
+                    imapServerSettings.hostname.value
+                }
+
+                else -> {
+                    null
+                }
+            }
+        } else {
+            null
+        }
     }
 }

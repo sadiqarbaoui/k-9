@@ -3,6 +3,9 @@ package app.k9mail.feature.account.setup.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import app.k9mail.core.ui.compose.common.mvi.observe
+import app.k9mail.feature.account.oauth.ui.AccountOAuthContract
+import app.k9mail.feature.account.oauth.ui.AccountOAuthScreen
+import app.k9mail.feature.account.oauth.ui.AccountOAuthViewModel
 import app.k9mail.feature.account.setup.NAME_INCOMING_VALIDATION
 import app.k9mail.feature.account.setup.NAME_OUTGOING_VALIDATION
 import app.k9mail.feature.account.setup.ui.AccountSetupContract.Effect
@@ -36,6 +39,7 @@ fun AccountSetupScreen(
     onBack: () -> Unit,
     viewModel: ViewModel = koinViewModel<AccountSetupViewModel>(),
     autoDiscoveryViewModel: AccountAutoDiscoveryContract.ViewModel = koinViewModel<AccountAutoDiscoveryViewModel>(),
+    oAuthViewModel: AccountOAuthContract.ViewModel = koinViewModel<AccountOAuthViewModel>(),
     incomingViewModel: AccountIncomingConfigContract.ViewModel = koinViewModel<AccountIncomingConfigViewModel>(),
     incomingValidationViewModel: AccountValidationContract.ViewModel = koinViewModel<AccountValidationViewModel>(
         named(
@@ -72,65 +76,78 @@ fun AccountSetupScreen(
                 ),
             )
 
+            is Effect.UpdateOAuth -> oAuthViewModel.initState(effect.state)
+
             is Effect.NavigateNext -> onFinish(effect.accountUuid)
             Effect.NavigateBack -> onBack()
+            is Effect.AutDiscoveryOAuthFinished -> TODO()
         }
     }
 
-    when (state.value.setupStep) {
-        SetupStep.AUTO_CONFIG -> {
-            AccountAutoDiscoveryScreen(
-                onNext = { autoDiscoveryState, isAutomaticConfig ->
-                    dispatch(
-                        Event.OnAutoDiscoveryFinished(
-                            autoDiscoveryState,
-                            isAutomaticConfig,
-                        ),
-                    )
-                },
-                onBack = { dispatch(Event.OnBack) },
-                viewModel = autoDiscoveryViewModel,
-            )
-        }
+    if (state.value.showOAuth) {
+        AccountOAuthScreen(
+            onOAuthResult = { dispatch(Event.OnOAuthResult(it)) },
+            viewModel = oAuthViewModel,
+        )
+    } else {
+        when (state.value.setupStep) {
+            SetupStep.AUTO_CONFIG -> {
+                AccountAutoDiscoveryScreen(
+                    onNext = { autoDiscoveryState, isAutomaticConfig ->
+                        dispatch(
+                            Event.OnAutoDiscoveryFinished(
+                                autoDiscoveryState,
+                                isAutomaticConfig,
+                            ),
+                        )
+                    },
+                    onOAuth = { hostname, emailAddress ->
+                        dispatch(Event.OnOAuth(hostname, emailAddress))
+                    },
+                    onBack = { dispatch(Event.OnBack) },
+                    viewModel = autoDiscoveryViewModel,
+                )
+            }
 
-        SetupStep.INCOMING_CONFIG -> {
-            AccountIncomingConfigScreen(
-                onNext = { dispatch(Event.OnNext) },
-                onBack = { dispatch(Event.OnBack) },
-                viewModel = incomingViewModel,
-            )
-        }
+            SetupStep.INCOMING_CONFIG -> {
+                AccountIncomingConfigScreen(
+                    onNext = { dispatch(Event.OnNext) },
+                    onBack = { dispatch(Event.OnBack) },
+                    viewModel = incomingViewModel,
+                )
+            }
 
-        SetupStep.INCOMING_VALIDATION -> {
-            AccountValidationScreen(
-                onNext = { dispatch(Event.OnNext) },
-                onBack = { dispatch(Event.OnBack) },
-                viewModel = incomingValidationViewModel,
-            )
-        }
+            SetupStep.INCOMING_VALIDATION -> {
+                AccountValidationScreen(
+                    onNext = { dispatch(Event.OnNext) },
+                    onBack = { dispatch(Event.OnBack) },
+                    viewModel = incomingValidationViewModel,
+                )
+            }
 
-        SetupStep.OUTGOING_CONFIG -> {
-            AccountOutgoingConfigScreen(
-                onNext = { dispatch(Event.OnNext) },
-                onBack = { dispatch(Event.OnBack) },
-                viewModel = outgoingViewModel,
-            )
-        }
+            SetupStep.OUTGOING_CONFIG -> {
+                AccountOutgoingConfigScreen(
+                    onNext = { dispatch(Event.OnNext) },
+                    onBack = { dispatch(Event.OnBack) },
+                    viewModel = outgoingViewModel,
+                )
+            }
 
-        SetupStep.OUTGOING_VALIDATION -> {
-            AccountValidationScreen(
-                onNext = { dispatch(Event.OnNext) },
-                onBack = { dispatch(Event.OnBack) },
-                viewModel = outgoingValidationViewModel,
-            )
-        }
+            SetupStep.OUTGOING_VALIDATION -> {
+                AccountValidationScreen(
+                    onNext = { dispatch(Event.OnNext) },
+                    onBack = { dispatch(Event.OnBack) },
+                    viewModel = outgoingValidationViewModel,
+                )
+            }
 
-        SetupStep.OPTIONS -> {
-            AccountOptionsScreen(
-                onNext = { dispatch(Event.OnNext) },
-                onBack = { dispatch(Event.OnBack) },
-                viewModel = optionsViewModel,
-            )
+            SetupStep.OPTIONS -> {
+                AccountOptionsScreen(
+                    onNext = { dispatch(Event.OnNext) },
+                    onBack = { dispatch(Event.OnBack) },
+                    viewModel = optionsViewModel,
+                )
+            }
         }
     }
 }
