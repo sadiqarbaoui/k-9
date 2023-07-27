@@ -61,6 +61,7 @@ class CreateAccountTest {
                 emailAddress = emailAddress,
                 incomingServerSettings = incomingServerSettings,
                 outgoingServerSettings = outgoingServerSettings,
+                authorizationState = null, // TODO
                 options = options,
             ),
         )

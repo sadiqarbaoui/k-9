@@ -20,6 +20,7 @@ class CreateAccount(
             emailAddress = emailAddress,
             incomingServerSettings = incomingServerSettings,
             outgoingServerSettings = outgoingServerSettings,
+            authorizationState = null,
             options = options,
         )
 
