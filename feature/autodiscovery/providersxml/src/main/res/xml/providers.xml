@@ -317,6 +317,12 @@
         <outgoing uri="smtp+tls+://mail.gmx.net" username="$email" />
     </provider>
 
+    <!-- hotamil.de -->
+    <provider id="dehotmailimap" label="hotmail.de" domain="hotmail.de">
+        <incoming uri="imap+tls+://outlook.office365.com" username="$email" />
+        <outgoing uri="smtp+starttls+://smtp-mail.outlook.com" username="$email" />
+    </provider>
+    
      <!-- Greece -->
     <provider id="otenet.gr" label="otenet.gr" domain="otenet.gr">
         <incoming uri="imap+ssl+://imap.otenet.gr" username="$email" />
